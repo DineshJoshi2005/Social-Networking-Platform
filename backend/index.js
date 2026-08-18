@@ -16,15 +16,35 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+app.set("trust proxy", 1);
+
+const allowedOrigins = [
+    "https://social-networking-platform-two.vercel.app",
+    "http://localhost:5173",
+    process.env.CLIENT_URL
+].filter(Boolean);
+
 export const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(null, true);
+            }
+        },
         credentials: true
     }
 });
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    },
     credentials: true
 }));
 

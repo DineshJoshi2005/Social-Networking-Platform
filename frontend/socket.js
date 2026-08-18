@@ -1,5 +1,7 @@
 import { io } from "socket.io-client";
 
-export const socket = io(import.meta.env.VITE_SERVER_URL || "http://localhost:8000", {
+const serverUrl = import.meta.env.VITE_SERVER_URL || "https://social-networking-platform-7wnj.onrender.com";
+
+export const socket = io(serverUrl, {
     withCredentials: true
 });
