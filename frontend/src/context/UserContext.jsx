@@ -25,7 +25,7 @@ function UserContext({ children }) {
         try {
             const notifRes = await axios.get(`${serverUrl}/api/notification/unread-count`, { withCredentials: true });
             setUnreadNotifications(notifRes.data?.count || 0);
-        } catch (e) {
+        } catch {
             try {
                 const fallbackRes = await axios.get(`${serverUrl}/api/notification/get`, { withCredentials: true });
                 const unread = (fallbackRes.data || []).filter(n => !n.isRead);

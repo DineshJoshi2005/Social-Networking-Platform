@@ -8,7 +8,7 @@ import {
     HiOutlineUserGroup
 } from "react-icons/hi2";
 import { FiMapPin } from "react-icons/fi";
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import axios from 'axios';
 import { authDataContext } from '../context/AuthContext.jsx';
 import EditProfile from '../components/EditProfile.jsx';

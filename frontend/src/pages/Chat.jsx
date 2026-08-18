@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Nav from '../components/Nav.jsx';
 import { authDataContext } from '../context/AuthContext.jsx';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import axios from 'axios';
 import dp from "../assets/dp.webp";
 import { socket } from '../../socket.js';

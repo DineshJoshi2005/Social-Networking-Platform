@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import Nav from '../components/Nav.jsx';
 import { authDataContext } from '../context/AuthContext.jsx';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import dp from "../assets/dp.webp";

@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState } from 'react';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import dp from "../assets/dp.webp";
 import { authDataContext } from '../context/AuthContext.jsx';
 import axios from 'axios';

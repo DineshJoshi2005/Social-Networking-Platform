@@ -10,7 +10,7 @@ import {
 import { FiClock } from "react-icons/fi";
 import moment from "moment";
 import { authDataContext } from '../context/AuthContext.jsx';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import ConnectButton from './ConnectButton.jsx';
 import { socket } from '../../socket.js';
 

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Nav from '../components/Nav.jsx';
 import { authDataContext } from '../context/AuthContext.jsx';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import axios from 'axios';
 import { 
     HiHandThumbUp,

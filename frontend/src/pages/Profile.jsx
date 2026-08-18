@@ -15,7 +15,7 @@ import {
 } from "react-icons/hi2";
 import { FiCamera } from "react-icons/fi";
 import EditProfile from '../components/EditProfile.jsx';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import Post from '../components/Post.jsx';
 import ConnectButton from '../components/ConnectButton.jsx';
 

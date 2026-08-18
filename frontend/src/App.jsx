@@ -7,7 +7,7 @@ import Network from './pages/Network.jsx';
 import Profile from './pages/Profile.jsx';
 import Notification from './pages/Notification.jsx';
 import Chat from './pages/Chat.jsx';
-import { userDataContext } from './context/userContext.jsx';
+import { userDataContext } from './context/UserContext.jsx';
 import { HiLink } from 'react-icons/hi2';
 
 function App() {

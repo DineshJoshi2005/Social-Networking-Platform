@@ -4,7 +4,7 @@ import { IoSearchOutline, IoNotificationsOutline, IoCloseOutline } from "react-i
 import { HiOutlineHome, HiOutlineUserGroup, HiLink, HiOutlineSun, HiOutlineMoon, HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { FiLogOut, FiUser, FiChevronDown } from "react-icons/fi";
 import dp from '../assets/dp.webp';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import { authDataContext } from '../context/AuthContext.jsx';
 import { ThemeContext } from '../context/ThemeContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { authDataContext } from '../context/AuthContext.jsx';
 import axios from 'axios';
-import { userDataContext } from '../context/userContext.jsx';
+import { userDataContext } from '../context/UserContext.jsx';
 import { socket } from '../../socket.js';
 import { useNavigate } from 'react-router-dom';
 import { FiUserPlus, FiUserCheck, FiClock, FiUserX } from 'react-icons/fi';
