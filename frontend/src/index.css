@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-crimson: #E73F1E;
+    --brand-orange: #FB6C00;
+    --brand-amber: #F9B637;
+    --brand-peach: #FFDD9C;
+    
+    --bg-main: #fafaf9;
+    --bg-card: #ffffff;
+    --bg-panel: #f8fafc;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+
+  html.dark,
+  body.dark,
+  .dark {
+    --bg-main: #0f0b09;
+    --bg-card: #17120e;
+    --bg-panel: #110d0a;
+    --border-color: #2d1c15;
+    --text-main: #f4f4f5;
+    --text-muted: #a1a1aa;
+    color-scheme: dark;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  body {
+    background-color: #fafaf9;
+    color: #0f172a;
+  }
+
+  html.dark body,
+  body.dark {
+    background-color: #0f0b09 !important;
+    color: #f4f4f5 !important;
+  }
+}
+
+/* Custom Conexis Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+html.dark ::-webkit-scrollbar-thumb,
+body.dark ::-webkit-scrollbar-thumb {
+  background: #2d1c15;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+html.dark ::-webkit-scrollbar-thumb:hover,
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: #FB6C00;
+}
+
+/* Global Dark Theme Overrides for flawless whole-screen coverage */
+html.dark,
+body.dark {
+  background-color: #0f0b09 !important;
+  color: #f4f4f5 !important;
+}
+
+/* Main background containers */
+html.dark .bg-stone-50,
+body.dark .bg-stone-50,
+.dark .bg-stone-50,
+html.dark .bg-slate-50,
+body.dark .bg-slate-50,
+.dark .bg-slate-50 {
+  background-color: #0f0b09 !important;
+}
+
+/* Header & navigation */
+html.dark header,
+body.dark header,
+.dark header,
+html.dark header.bg-white\/95,
+body.dark header.bg-white\/95,
+.dark header.bg-white\/95 {
+  background-color: rgba(17, 13, 10, 0.95) !important;
+  border-color: #2d1c15 !important;
+}
+
+/* Cards, dropdowns, post containers, modals */
+html.dark .bg-white,
+body.dark .bg-white,
+.dark .bg-white {
+  background-color: #17120e !important;
+}
+
+/* Sub-containers & search inputs */
+html.dark .bg-slate-100,
+body.dark .bg-slate-100,
+.dark .bg-slate-100 {
+  background-color: #110d0a !important;
+}
+
+/* Subtle highlights */
+html.dark .bg-slate-200,
+body.dark .bg-slate-200,
+.dark .bg-slate-200 {
+  background-color: #2d1c15 !important;
+}
+
+/* Border colors across dark mode */
+html.dark .border-slate-200,
+body.dark .border-slate-200,
+.dark .border-slate-200,
+html.dark .border-slate-100,
+body.dark .border-slate-100,
+.dark .border-slate-100 {
+  border-color: #2d1c15 !important;
+}
+
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+body.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #2d1c15 !important;
+}
+
+/* Typography in dark mode */
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+body.dark .text-slate-900,
+body.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: #f4f4f5 !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600,
+body.dark .text-slate-700,
+body.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-slate-600 {
+  color: #d4d4d8 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400,
+body.dark .text-slate-500,
+body.dark .text-slate-400,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #a1a1aa !important;
+}
+
+/* Form inputs */
+html.dark input,
+html.dark textarea,
+body.dark input,
+body.dark textarea,
+.dark input,
+.dark textarea {
+  background-color: #0f0b09 !important;
+  color: #f4f4f5 !important;
+  border-color: #2d1c15 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+body.dark input::placeholder,
+body.dark textarea::placeholder,
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #71717a !important;
+}
+
+/* Hover effects in dark mode */
+html.dark .hover\:bg-slate-50:hover,
+body.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-100:hover,
+body.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: rgba(45, 28, 21, 0.6) !important;
+}
