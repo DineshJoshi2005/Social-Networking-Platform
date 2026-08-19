@@ -14,11 +14,18 @@ import { userDataContext } from '../context/UserContext.jsx';
 import ConnectButton from './ConnectButton.jsx';
 import { socket } from '../../socket.js';
 
-function Post({ id, author, like = [], comment = [], description, image, createdAt }) {
+function Post(props) {
+    const postData = props.post || props;
+    const id = postData._id || postData.id;
+    const author = postData.author;
+    const description = postData.description || "";
+    const image = postData.image;
+    const createdAt = postData.createdAt;
+
     const [more, setMore] = useState(false);
     const [isLarge, setIsLarge] = useState(false);
-    const [likes, setLikes] = useState(like || []);
-    const [comments, setComments] = useState(comment || []);
+    const [likes, setLikes] = useState(postData.like || []);
+    const [comments, setComments] = useState(postData.comment || []);
     const [commentContent, setCommentContent] = useState("");
     const [showComment, setShowComment] = useState(false);
     const [submittingComment, setSubmittingComment] = useState(false);
@@ -27,7 +34,19 @@ function Post({ id, author, like = [], comment = [], description, image, created
     const { serverUrl } = useContext(authDataContext);
     const { userData, handleGetProfile } = useContext(userDataContext);
 
-    const isLiked = userData?._id ? likes.includes(userData._id) : false;
+    const isLiked = userData?._id ? likes.some(uid => (uid?._id || uid) === userData._id) : false;
+
+    useEffect(() => {
+        if (postData.like) {
+            setLikes(postData.like);
+        }
+    }, [postData.like]);
+
+    useEffect(() => {
+        if (postData.comment) {
+            setComments(postData.comment);
+        }
+    }, [postData.comment]);
 
     useEffect(() => {
         if (textRef.current) {
@@ -37,11 +56,11 @@ function Post({ id, author, like = [], comment = [], description, image, created
     }, [description]);
 
     const handleLike = async () => {
-        if (!userData?._id) return;
+        if (!userData?._id || !id) return;
 
         const previousLikes = [...likes];
         if (isLiked) {
-            setLikes(likes.filter(uid => uid !== userData._id));
+            setLikes(likes.filter(uid => (uid?._id || uid) !== userData._id));
         } else {
             setLikes([...likes, userData._id]);
         }
@@ -59,7 +78,7 @@ function Post({ id, author, like = [], comment = [], description, image, created
 
     const handleComment = async (e) => {
         e.preventDefault();
-        if (!commentContent.trim()) return;
+        if (!commentContent.trim() || !id) return;
 
         setSubmittingComment(true);
         try {
@@ -100,27 +119,34 @@ function Post({ id, author, like = [], comment = [], description, image, created
         };
     }, [id]);
 
+    const authorName = author?.firstName 
+        ? `${author.firstName} ${author.lastName || ''}`.trim()
+        : "Member";
+
+    const authorHeadline = author?.headline || (author?.userName ? `@${author.userName}` : "Conexis Member");
+    const authorImage = author?.profileImage || dp;
+
     return (
         <article className="w-full bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] shadow-xs transition-colors overflow-hidden flex flex-col">
             
-            <div className="p-4 flex items-start justify-between gap-3">
+            <div className="p-3.5 sm:p-4 flex items-start justify-between gap-3">
                 <div 
                     onClick={() => author?.userName && handleGetProfile(author.userName)}
                     className="flex items-center gap-3 cursor-pointer group flex-1 min-w-0"
                 >
                     <img 
-                        src={author?.profileImage || dp} 
-                        alt={author?.firstName || "User"} 
-                        className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15]"
+                        src={authorImage} 
+                        alt={authorName} 
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-[#FB6C00] dark:group-hover:text-[#F9B637] transition-colors truncate">
-                            {author ? `${author.firstName} ${author.lastName}` : "Community Member"}
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-100 group-hover:text-[#FB6C00] dark:group-hover:text-[#F9B637] transition-colors truncate">
+                            {authorName}
                         </h4>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                            {author?.headline || `@${author?.userName || 'member'}`}
+                        <p className="text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 truncate">
+                            {authorHeadline}
                         </p>
-                        <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
+                        <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
                             <FiClock className="w-3 h-3" />
                             <span>{moment(createdAt).fromNow()}</span>
                         </div>
@@ -134,24 +160,26 @@ function Post({ id, author, like = [], comment = [], description, image, created
                 )}
             </div>
 
-            <div className="px-4 pb-3">
-                <p 
-                    ref={textRef} 
-                    className={`text-slate-700 dark:text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap ${
-                        !more && isLarge ? 'line-clamp-3' : ''
-                    }`}
-                >
-                    {description}
-                </p>
-                {isLarge && (
-                    <button 
-                        onClick={() => setMore(!more)}
-                        className="text-xs font-semibold text-[#FB6C00] dark:text-[#F9B637] hover:underline mt-1 focus:outline-none"
+            {description && (
+                <div className="px-3.5 sm:px-4 pb-3">
+                    <p 
+                        ref={textRef} 
+                        className={`text-slate-700 dark:text-zinc-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${
+                            !more && isLarge ? 'line-clamp-3' : ''
+                        }`}
                     >
-                        {more ? 'Show less' : 'Read more...'}
-                    </button>
-                )}
-            </div>
+                        {description}
+                    </p>
+                    {isLarge && (
+                        <button 
+                            onClick={() => setMore(!more)}
+                            className="text-xs font-semibold text-[#FB6C00] dark:text-[#F9B637] hover:underline mt-1 focus:outline-none"
+                        >
+                            {more ? 'Show less' : 'Read more...'}
+                        </button>
+                    )}
+                </div>
+            )}
 
             {image && (
                 <div className="w-full bg-slate-100 dark:bg-[#0f0b09] max-h-[460px] overflow-hidden flex items-center justify-center border-y border-slate-100 dark:border-[#2d1c15]">
@@ -164,10 +192,10 @@ function Post({ id, author, like = [], comment = [], description, image, created
                 </div>
             )}
 
-            <div className="px-4 py-2 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 border-b border-slate-100 dark:border-[#2d1c15]">
+            <div className="px-3.5 sm:px-4 py-2 flex items-center justify-between text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400 border-b border-slate-100 dark:border-[#2d1c15]">
                 <div className="flex items-center gap-1.5">
                     <span className="w-4 h-4 rounded-full bg-[#FB6C00]/10 dark:bg-[#FB6C00]/20 flex items-center justify-center text-[#E73F1E] dark:text-[#F9B637]">
-                        <HiHandThumbUp className="w-3 h-3" />
+                        <HiHandThumbUp className="w-2.5 h-2.5" />
                     </span>
                     <span className="font-medium text-slate-600 dark:text-zinc-300">
                         {likes.length} {likes.length === 1 ? 'like' : 'likes'}
@@ -178,10 +206,10 @@ function Post({ id, author, like = [], comment = [], description, image, created
                 </div>
             </div>
 
-            <div className="px-2 py-1 flex items-center justify-around gap-2">
+            <div className="px-2 py-1 flex items-center justify-around gap-1 sm:gap-2">
                 <button 
                     onClick={handleLike}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors ${
                         isLiked 
                             ? "text-[#E73F1E] dark:text-[#F9B637] bg-[#FB6C00]/15 dark:bg-[#FB6C00]/25 font-bold" 
                             : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#2d1c15] hover:text-slate-900 dark:hover:text-zinc-100"
@@ -197,7 +225,7 @@ function Post({ id, author, like = [], comment = [], description, image, created
 
                 <button 
                     onClick={() => setShowComment(prev => !prev)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 rounded-md text-xs sm:text-sm font-semibold transition-colors ${
                         showComment 
                             ? "text-[#E73F1E] dark:text-[#F9B637] bg-[#FB6C00]/15 dark:bg-[#FB6C00]/25 font-bold" 
                             : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#2d1c15] hover:text-slate-900 dark:hover:text-zinc-100"
@@ -209,7 +237,7 @@ function Post({ id, author, like = [], comment = [], description, image, created
             </div>
 
             {showComment && (
-                <div className="bg-slate-50 dark:bg-[#0f0b09] p-4 border-t border-slate-100 dark:border-[#2d1c15] space-y-3">
+                <div className="bg-slate-50 dark:bg-[#0f0b09] p-3 sm:p-4 border-t border-slate-100 dark:border-[#2d1c15] space-y-3">
                     <form onSubmit={handleComment} className="flex items-center gap-2">
                         <img 
                             src={userData?.profileImage || dp} 
@@ -245,7 +273,7 @@ function Post({ id, author, like = [], comment = [], description, image, created
                                     />
                                     <div className="flex-1 bg-white dark:bg-[#17120e] p-2.5 rounded-md border border-slate-200 dark:border-[#2d1c15]">
                                         <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">
-                                            {com.user ? `${com.user.firstName} ${com.user.lastName}` : "Community Member"}
+                                            {com.user ? `${com.user.firstName} ${com.user.lastName || ''}`.trim() : "Member"}
                                         </p>
                                         <p className="text-xs text-slate-700 dark:text-zinc-300 mt-0.5 leading-relaxed">
                                             {com.content}

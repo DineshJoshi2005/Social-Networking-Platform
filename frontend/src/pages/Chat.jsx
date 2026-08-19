@@ -335,7 +335,7 @@ function Chat() {
                                         <img 
                                             src={selectedUser.profileImage || dp} 
                                             alt={selectedUser.firstName} 
-                                            className="w-8.5 h-8.5 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
+                                            className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
                                         />
 
                                         <div className="min-w-0 flex-1">

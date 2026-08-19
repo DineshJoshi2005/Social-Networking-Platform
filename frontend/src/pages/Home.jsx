@@ -145,7 +145,7 @@ function Home() {
                                 <img 
                                     src={userData.profileImage || dp} 
                                     alt={userData.firstName} 
-                                    className="w-18 h-18 rounded-full border-3 border-white dark:border-[#17120e] object-cover shadow-sm bg-white dark:bg-[#17120e]"
+                                    className="w-16 h-16 rounded-full border-2 border-white dark:border-[#17120e] object-cover shadow-sm bg-white dark:bg-[#17120e] shrink-0"
                                 />
                                 <button 
                                     onClick={() => handleGetProfile(userData.userName)}

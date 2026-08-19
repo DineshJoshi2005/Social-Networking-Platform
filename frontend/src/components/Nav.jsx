@@ -94,7 +94,7 @@ function Nav() {
                         onClick={() => navigate("/")}
                         className="flex items-center gap-1.5 cursor-pointer group select-none shrink-0"
                     >
-                        <div className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-md bg-gradient-to-tr from-[#E73F1E] to-[#FB6C00] hover:opacity-95 flex items-center justify-center text-white shadow-xs transition-all">
+                        <div className="w-8 h-8 rounded-md bg-gradient-to-tr from-[#E73F1E] to-[#FB6C00] hover:opacity-95 flex items-center justify-center text-white shadow-xs transition-all">
                             <HiLink className="w-4 h-4" />
                         </div>
                         <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#E73F1E] to-[#FB6C00] bg-clip-text text-transparent tracking-tight hidden lg:inline-block">
@@ -265,7 +265,7 @@ function Nav() {
                                 <img 
                                     src={userData.profileImage || dp} 
                                     alt={userData.firstName} 
-                                    className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15]"
+                                    className="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15]"
                                 />
                                 <FiChevronDown className={`w-3 h-3 text-slate-500 dark:text-zinc-400 hidden sm:block transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
                             </button>
