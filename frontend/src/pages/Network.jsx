@@ -93,7 +93,7 @@ function Network() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-20 pb-12 px-4 sm:px-6 transition-colors">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-12 px-3 sm:px-6 transition-colors">
             <Nav />
 
             <div className="max-w-4xl mx-auto space-y-4">

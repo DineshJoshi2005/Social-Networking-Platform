@@ -240,7 +240,7 @@ function Nav() {
                         <div className="relative flex items-center justify-center">
                             <IoNotificationsOutline className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                             {unreadNotifications > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 bg-[#E73F1E] text-white text-[9px] font-bold px-1 min-w-[15px] h-[15px] flex items-center justify-center rounded-full shadow-xs animate-pulse">
+                                <span className="absolute -top-1.5 -right-1.5 bg-[#E73F1E] text-white text-[9px] font-bold px-1 min-w-[15px] h-[15px] flex items-center justify-center rounded-full shadow-xs">
                                     {unreadNotifications > 99 ? '99+' : unreadNotifications}
                                 </span>
                             )}

@@ -55,8 +55,29 @@ function Chat() {
     const fetchConnections = async () => {
         setLoadingConnections(true);
         try {
-            const result = await axios.get(`${serverUrl}/api/connection`, { withCredentials: true });
-            const list = result.data || [];
+            let list = [];
+            try {
+                const convRes = await axios.get(`${serverUrl}/api/message/conversations`, { withCredentials: true });
+                if (convRes.data && Array.isArray(convRes.data) && convRes.data.length > 0) {
+                    list = convRes.data.map(item => ({
+                        ...item.user,
+                        lastMessage: item.lastMessage,
+                        lastMessageTime: item.lastMessageTime,
+                        unreadCount: item.unreadCount || 0
+                    }));
+                }
+            } catch (err) {
+                console.log("Fetch conversations error:", err);
+            }
+
+            if (list.length === 0) {
+                const result = await axios.get(`${serverUrl}/api/connection`, { withCredentials: true });
+                list = (result.data || []).map(c => ({
+                    ...c,
+                    unreadCount: 0
+                }));
+            }
+
             setConnections(list);
 
             if (urlUserId) {
@@ -93,11 +114,17 @@ function Chat() {
 
             await axios.post(`${serverUrl}/api/message/seen/${targetUserId}`, {}, { withCredentials: true });
             fetchBadgeCounts();
+            setConnections(prev => prev.map(c => c._id === targetUserId ? { ...c, unreadCount: 0 } : c));
         } catch (error) {
             console.log("Fetch messages error:", error);
         } finally {
             setLoadingMessages(false);
         }
+    };
+
+    const handleSelectUser = (con) => {
+        setSelectedUser(con);
+        setConnections(prev => prev.map(c => c._id === con._id ? { ...c, unreadCount: 0 } : c));
     };
 
     const handleSendMessage = async (e) => {
@@ -133,6 +160,17 @@ function Chat() {
                     }
                     return prev.map(m => m._id === tempId ? result.data : m);
                 });
+
+                setConnections(prev => prev.map(c => {
+                    if (c._id === selectedUser._id) {
+                        return {
+                            ...c,
+                            lastMessage: messageText,
+                            lastMessageTime: new Date().toISOString()
+                        };
+                    }
+                    return c;
+                }));
             }
         } catch (error) {
             console.log("Send message error:", error);
@@ -182,6 +220,18 @@ function Chat() {
                     return [...prev, newMsg];
                 });
 
+                setConnections(prev => prev.map(c => {
+                    if (c._id === activeId) {
+                        return {
+                            ...c,
+                            lastMessage: newMsg.message,
+                            lastMessageTime: newMsg.createdAt,
+                            unreadCount: 0
+                        };
+                    }
+                    return c;
+                }));
+
                 if (senderId === activeId) {
                     try {
                         await axios.post(`${serverUrl}/api/message/seen/${activeId}`, {}, { withCredentials: true });
@@ -190,6 +240,18 @@ function Chat() {
                         console.log("Seen update error:", e);
                     }
                 }
+            } else if (receiverId === userData?._id) {
+                setConnections(prev => prev.map(c => {
+                    if (c._id === senderId) {
+                        return {
+                            ...c,
+                            lastMessage: newMsg.message,
+                            lastMessageTime: newMsg.createdAt,
+                            unreadCount: (c.unreadCount || 0) + 1
+                        };
+                    }
+                    return c;
+                }));
             }
         };
 
@@ -225,7 +287,7 @@ function Chat() {
     const connectedWithActiveUser = selectedUser ? isUserConnected(selectedUser._id) : false;
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-8 px-2 sm:px-6 transition-colors flex flex-col">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-6 px-2 sm:px-6 transition-colors flex flex-col">
             <Nav />
 
             <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
@@ -275,14 +337,17 @@ function Chat() {
                             ) : filteredConnections.length > 0 ? (
                                 filteredConnections.map((con) => {
                                     const isSelected = selectedUser?._id === con._id;
+                                    const hasUnread = (con.unreadCount || 0) > 0 && !isSelected;
                                     return (
                                         <div
                                             key={con._id}
-                                            onClick={() => setSelectedUser(con)}
+                                            onClick={() => handleSelectUser(con)}
                                             className={`p-3 flex items-center gap-3 cursor-pointer transition-colors ${
                                                 isSelected 
                                                     ? 'bg-[#FB6C00]/10 dark:bg-[#2d1c15] border-l-3 border-[#FB6C00]' 
-                                                    : 'hover:bg-slate-50 dark:hover:bg-[#2d1c15]/40'
+                                                    : hasUnread 
+                                                        ? 'bg-amber-500/5 dark:bg-amber-500/10 hover:bg-slate-50 dark:hover:bg-[#2d1c15]/40' 
+                                                        : 'hover:bg-slate-50 dark:hover:bg-[#2d1c15]/40'
                                             }`}
                                         >
                                             <div className="relative shrink-0">
@@ -291,14 +356,26 @@ function Chat() {
                                                     alt={con.firstName} 
                                                     className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15]"
                                                 />
+                                                {hasUnread && (
+                                                    <span className="absolute -top-1 -right-1 bg-[#FB6C00] text-white text-[9px] font-bold px-1 min-w-[15px] h-[15px] flex items-center justify-center rounded-full shadow-xs">
+                                                        {con.unreadCount > 99 ? '99+' : con.unreadCount}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <div className="min-w-0 flex-1">
-                                                <h4 className={`text-xs font-bold truncate ${isSelected ? 'text-[#E73F1E] dark:text-[#F9B637]' : 'text-slate-900 dark:text-zinc-100'}`}>
-                                                    {con.firstName} {con.lastName}
-                                                </h4>
-                                                <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
-                                                    {con.headline || `@${con.userName}`}
+                                                <div className="flex items-center justify-between gap-1">
+                                                    <h4 className={`text-xs font-bold truncate ${isSelected ? 'text-[#E73F1E] dark:text-[#F9B637]' : 'text-slate-900 dark:text-zinc-100'}`}>
+                                                        {con.firstName} {con.lastName}
+                                                    </h4>
+                                                    {hasUnread && (
+                                                        <span className="text-[10px] font-bold bg-[#FB6C00] text-white px-1.5 py-0.5 rounded-full shrink-0">
+                                                            {con.unreadCount}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className={`text-[11px] truncate ${hasUnread ? 'text-slate-900 dark:text-zinc-100 font-semibold' : 'text-slate-500 dark:text-zinc-400'}`}>
+                                                    {con.lastMessage || con.headline || `@${con.userName}`}
                                                 </p>
                                             </div>
                                         </div>
