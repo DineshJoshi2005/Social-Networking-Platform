@@ -13,6 +13,7 @@ import {
     HiOutlineTrash,
     HiOutlineChatBubbleLeftRight
 } from "react-icons/hi2";
+import { socket } from '../../socket.js';
 
 function Network() {
     const navigate = useNavigate();
@@ -90,6 +91,36 @@ function Network() {
     useEffect(() => {
         handleGetRequests();
         handleGetMyConnections();
+
+        const handleNewConnectionReq = (reqData) => {
+            if (!reqData) return;
+            setInvitations(prev => {
+                if (prev.some(inv => inv._id === reqData._id)) return prev;
+                return [reqData, ...prev];
+            });
+            setPendingConnections(prev => prev + 1);
+        };
+
+        const handleStatus = ({ newStatus }) => {
+            if (newStatus === "disconnect" || newStatus === "connect") {
+                handleGetRequests();
+                handleGetMyConnections();
+            }
+        };
+
+        const handleConnRemoved = ({ userId }) => {
+            setMyConnections(prev => prev.filter(c => c._id !== userId));
+        };
+
+        socket.on("newConnectionRequest", handleNewConnectionReq);
+        socket.on("statusUpdate", handleStatus);
+        socket.on("connectionRemoved", handleConnRemoved);
+
+        return () => {
+            socket.off("newConnectionRequest", handleNewConnectionReq);
+            socket.off("statusUpdate", handleStatus);
+            socket.off("connectionRemoved", handleConnRemoved);
+        };
     }, []);
 
     return (

@@ -13,6 +13,7 @@ import {
 import { FiUserCheck } from "react-icons/fi";
 import dp from "../assets/dp.webp";
 import moment from 'moment';
+import { socket } from '../../socket.js';
 
 const Notification = () => {
     const { serverUrl } = useContext(authDataContext);
@@ -80,7 +81,27 @@ const Notification = () => {
 
     useEffect(() => {
         handleGetNotification();
-    }, []);
+
+        const handleRealtimeNotification = async (newNotif) => {
+            if (!newNotif) return;
+            setNotificationData(prev => {
+                if (prev.some(n => n._id === newNotif._id)) return prev;
+                return [newNotif, ...prev];
+            });
+            try {
+                await axios.put(`${serverUrl}/api/notification/mark-read`, {}, { withCredentials: true });
+                setUnreadNotifications(0);
+            } catch (e) {
+                console.log("Mark read error:", e);
+            }
+        };
+
+        socket.on("newNotification", handleRealtimeNotification);
+
+        return () => {
+            socket.off("newNotification", handleRealtimeNotification);
+        };
+    }, [serverUrl, setUnreadNotifications]);
 
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-20 sm:pt-24 pb-12 px-3 sm:px-6 transition-colors">
