@@ -121,3 +121,29 @@ export const comment = async (req, res) => {
         return res.status(400).json({ message: `comment error ${error.message}` });
     }
 };
+
+export const deletePost = async (req, res) => {
+    try {
+        let postId = req.params.id;
+        let userId = req.userId;
+
+        let post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        if (post.author.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to delete this post" });
+        }
+
+        await Post.findByIdAndDelete(postId);
+        await Notification.deleteMany({ relatedPost: postId });
+
+        io.emit("postDeleted", { postId });
+
+        return res.status(200).json({ message: "Post deleted successfully", postId });
+    } catch (error) {
+        console.log("Delete post error:", error);
+        return res.status(500).json({ message: `Delete post error: ${error.message}` });
+    }
+};

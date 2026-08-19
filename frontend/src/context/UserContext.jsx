@@ -130,7 +130,12 @@ function UserContext({ children }) {
             fetchBadgeCounts();
         };
 
+        const handlePostDeleted = ({ postId }) => {
+            setPostData((prevPosts) => prevPosts.filter((p) => (p._id || p.id) !== postId));
+        };
+
         socket.on("newPostCreated", handleNewPost);
+        socket.on("postDeleted", handlePostDeleted);
         socket.on("newNotification", handleNewNotification);
         socket.on("newMessage", handleNewMessage);
         socket.on("newConnectionRequest", handleNewConnectionRequest);
@@ -138,6 +143,7 @@ function UserContext({ children }) {
 
         return () => {
             socket.off("newPostCreated", handleNewPost);
+            socket.off("postDeleted", handlePostDeleted);
             socket.off("newNotification", handleNewNotification);
             socket.off("newMessage", handleNewMessage);
             socket.off("newConnectionRequest", handleNewConnectionRequest);

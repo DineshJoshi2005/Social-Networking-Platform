@@ -5,7 +5,8 @@ import {
     HiHandThumbUp,
     HiOutlineHandThumbUp,
     HiOutlineChatBubbleOvalLeftEllipsis, 
-    HiPaperAirplane
+    HiPaperAirplane,
+    HiOutlineTrash
 } from "react-icons/hi2";
 import { FiClock } from "react-icons/fi";
 import moment from "moment";
@@ -29,10 +30,17 @@ function Post(props) {
     const [commentContent, setCommentContent] = useState("");
     const [showComment, setShowComment] = useState(false);
     const [submittingComment, setSubmittingComment] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const textRef = useRef(null);
     const { serverUrl } = useContext(authDataContext);
-    const { userData, handleGetProfile } = useContext(userDataContext);
+    const { userData, handleGetProfile, setPostData } = useContext(userDataContext);
+
+    const isAuthor = userData?._id && (
+        (typeof author === 'object' && author?._id === userData._id) ||
+        author === userData._id
+    );
 
     const isLiked = userData?._id ? likes.some(uid => (uid?._id || uid) === userData._id) : false;
 
@@ -97,6 +105,20 @@ function Post(props) {
         }
     };
 
+    const handleDelete = async () => {
+        if (!id || deleting) return;
+        setDeleting(true);
+        try {
+            await axios.delete(`${serverUrl}/api/post/delete/${id}`, { withCredentials: true });
+            setPostData(prev => prev.filter(p => (p._id || p.id) !== id));
+        } catch (err) {
+            console.log("Delete post error:", err);
+        } finally {
+            setDeleting(false);
+            setShowDeleteConfirm(false);
+        }
+    };
+
     useEffect(() => {
         const handleLikeUpdated = ({ postId, likes: updatedLikes }) => {
             if (postId === id) {
@@ -153,11 +175,43 @@ function Post(props) {
                     </div>
                 </div>
 
-                {userData?._id && author?._id && userData._id !== author._id && (
-                    <div className="shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
+                    {userData?._id && author?._id && userData._id !== author._id && (
                         <ConnectButton userId={author._id} />
-                    </div>
-                )}
+                    )}
+
+                    {isAuthor && (
+                        <div className="relative">
+                            {showDeleteConfirm ? (
+                                <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/40 p-1 rounded-md border border-rose-200 dark:border-rose-900/60">
+                                    <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold pl-1">Delete?</span>
+                                    <button
+                                        onClick={handleDelete}
+                                        disabled={deleting}
+                                        className="px-2 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-[10px] font-bold transition-colors disabled:opacity-50"
+                                    >
+                                        {deleting ? "..." : "Yes"}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        disabled={deleting}
+                                        className="px-1.5 py-0.5 text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 text-[10px]"
+                                    >
+                                        No
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-colors"
+                                    title="Delete post"
+                                >
+                                    <HiOutlineTrash className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {description && (
