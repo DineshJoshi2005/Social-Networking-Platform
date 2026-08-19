@@ -287,7 +287,7 @@ function Chat() {
     const connectedWithActiveUser = selectedUser ? isUserConnected(selectedUser._id) : false;
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-6 px-2 sm:px-6 transition-colors flex flex-col">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-20 sm:pt-24 pb-6 px-2 sm:px-6 transition-colors flex flex-col">
             <Nav />
 
             <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">

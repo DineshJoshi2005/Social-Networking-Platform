@@ -114,7 +114,7 @@ function Home() {
     if (!userData) return null;
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-12 px-3 sm:px-6 transition-colors">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-20 sm:pt-24 pb-12 px-3 sm:px-6 transition-colors">
             <Nav />
 
             {edit && <EditProfile />}

@@ -123,7 +123,7 @@ function Nav() {
                         </div>
 
                         {searchInput && (
-                            <div className="fixed top-15 left-2.5 right-2.5 sm:absolute sm:top-10 sm:left-0 sm:right-auto sm:w-96 bg-white dark:bg-[#17120e] rounded-xl shadow-2xl border border-slate-200 dark:border-[#2d1c15] p-3 z-50 max-h-[75vh] sm:max-h-80 overflow-y-auto">
+                            <div className="fixed top-16 left-2.5 right-2.5 sm:absolute sm:top-10 sm:left-0 sm:right-auto sm:w-96 bg-white dark:bg-[#17120e] rounded-xl shadow-2xl border border-slate-200 dark:border-[#2d1c15] p-3 z-50 max-h-[75vh] sm:max-h-80 overflow-y-auto">
                                 <div className="flex items-center justify-between px-2 pb-2 mb-1 border-b border-slate-100 dark:border-[#2d1c15]">
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
                                         {isSearching ? "Searching..." : `Results (${searchData.length})`}
