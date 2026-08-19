@@ -123,13 +123,11 @@ function UserContext({ children }) {
         };
 
         const handleNewConnectionRequest = () => {
-            setPendingConnections((prev) => prev + 1);
+            fetchBadgeCounts();
         };
 
-        const handleStatusUpdate = ({ newStatus }) => {
-            if (newStatus === "received") {
-                setPendingConnections((prev) => prev + 1);
-            }
+        const handleStatusUpdate = () => {
+            fetchBadgeCounts();
         };
 
         socket.on("newPostCreated", handleNewPost);
@@ -145,7 +143,7 @@ function UserContext({ children }) {
             socket.off("newConnectionRequest", handleNewConnectionRequest);
             socket.off("statusUpdate", handleStatusUpdate);
         };
-    }, [userData?._id]);
+    }, [userData?._id, fetchBadgeCounts]);
 
     const value = {
         userData,

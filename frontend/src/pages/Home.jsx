@@ -5,7 +5,8 @@ import {
     HiOutlinePhoto, 
     HiPencilSquare,
     HiXMark,
-    HiOutlineUserGroup
+    HiOutlineUserGroup,
+    HiOutlineExclamationCircle
 } from "react-icons/hi2";
 import { FiMapPin } from "react-icons/fi";
 import { userDataContext } from '../context/UserContext.jsx';
@@ -33,6 +34,7 @@ function Home() {
     const [description, setDescription] = useState("");
     const [uploadPost, setUploadPost] = useState(false);
     const [posting, setPosting] = useState(false);
+    const [uploadError, setUploadError] = useState("");
     const [suggestedUsers, setSuggestedUsers] = useState([]);
 
     const fileInputRef = useRef(null);
@@ -42,6 +44,7 @@ function Home() {
         if (file) {
             setFrontendImage(URL.createObjectURL(file));
             setBackendImage(file);
+            setUploadError("");
         }
     };
 
@@ -58,6 +61,7 @@ function Home() {
         if (!description.trim() && !backendImage) return;
 
         setPosting(true);
+        setUploadError("");
         try {
             const formData = new FormData();
             formData.append("description", description);
@@ -85,6 +89,8 @@ function Home() {
 
         } catch (error) {
             console.log("Create post error:", error);
+            const msg = error.response?.data?.message || "Failed to publish post. Please try again.";
+            setUploadError(msg);
         } finally {
             setPosting(false);
         }
@@ -108,108 +114,114 @@ function Home() {
     if (!userData) return null;
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-20 pb-12 px-4 sm:px-6 transition-colors">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-12 px-3 sm:px-6 transition-colors">
             <Nav />
+
             {edit && <EditProfile />}
 
-            <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
                 
-                <aside className="lg:col-span-3 lg:sticky lg:top-20 space-y-4">
-                    <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] shadow-xs">
+                <aside className="md:col-span-4 lg:col-span-3 space-y-4">
+                    
+                    <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] shadow-xs overflow-hidden transition-colors">
                         
-                        <div className="h-20 w-full rounded-t-lg bg-gradient-to-r from-[#E73F1E] via-[#FB6C00] to-[#F9B637] relative overflow-hidden">
-                            {userData.coverImage && (
-                                <img 
-                                    src={userData.coverImage} 
-                                    alt="Cover" 
-                                    className="w-full h-full object-cover"
-                                />
-                            )}
+                        <div className="relative h-20 bg-gradient-to-r from-[#E73F1E] via-[#FB6C00] to-[#F9B637]">
+                            <img 
+                                src={userData.coverImage || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60"} 
+                                alt="Cover" 
+                                className="w-full h-full object-cover opacity-80"
+                            />
+                            <button 
+                                onClick={() => setEdit(true)}
+                                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs transition-colors"
+                                title="Edit profile"
+                            >
+                                <HiPencilSquare className="w-3.5 h-3.5" />
+                            </button>
                         </div>
 
-                        <div className="px-4 pb-4 pt-0 relative">
-                            
-                            <div className="-mt-10 mb-2.5 flex items-center justify-between relative z-20">
-                                <div 
-                                    onClick={() => setEdit(true)}
-                                    className="w-16 h-16 rounded-full border-2 border-white dark:border-[#17120e] shadow-sm overflow-hidden bg-white dark:bg-[#17120e] cursor-pointer"
+                        <div className="px-4 pb-4 pt-0">
+                            <div className="relative flex justify-between items-end -mt-10 mb-3">
+                                <img 
+                                    src={userData.profileImage || dp} 
+                                    alt={userData.firstName} 
+                                    className="w-18 h-18 rounded-full border-3 border-white dark:border-[#17120e] object-cover shadow-sm bg-white dark:bg-[#17120e]"
+                                />
+                                <button 
+                                    onClick={() => handleGetProfile(userData.userName)}
+                                    className="text-xs font-bold text-[#FB6C00] dark:text-[#F9B637] hover:underline"
                                 >
-                                    <img 
-                                        src={userData.profileImage || dp} 
-                                        alt={userData.firstName} 
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
+                                    View Full Profile
+                                </button>
                             </div>
 
-                            <div className="mt-1">
-                                <h3 
-                                    onClick={() => handleGetProfile(userData.userName)}
-                                    className="text-sm font-bold text-slate-900 dark:text-zinc-100 hover:text-[#FB6C00] dark:hover:text-[#F9B637] cursor-pointer transition-colors"
-                                >
+                            <div className="space-y-1">
+                                <h2 className="text-base font-bold text-slate-900 dark:text-zinc-100 leading-tight">
                                     {userData.firstName} {userData.lastName}
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 mt-0.5">
-                                    {userData.headline || "Professional & Community Member"}
+                                </h2>
+                                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                                    @{userData.userName}
                                 </p>
-
+                                <p className="text-xs text-slate-600 dark:text-zinc-300 line-clamp-2 pt-1 leading-relaxed">
+                                    {userData.headline || "Professional Member on Conexis"}
+                                </p>
                                 {userData.location && (
-                                    <div className="flex items-center gap-1 text-xs text-slate-400 dark:text-zinc-500 mt-1.5">
-                                        <FiMapPin className="w-3.5 h-3.5" />
+                                    <div className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-zinc-500 pt-1">
+                                        <FiMapPin className="w-3 h-3 text-[#FB6C00]" />
                                         <span>{userData.location}</span>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#2d1c15] flex items-center justify-between text-xs">
-                                <span className="text-slate-500 dark:text-zinc-400 font-medium">Connections</span>
-                                <span className="font-bold text-[#E73F1E] dark:text-[#F9B637] bg-[#FB6C00]/10 px-2 py-0.5 rounded-md">
+                            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#2d1c15] flex items-center justify-between text-xs">
+                                <span className="text-slate-500 dark:text-zinc-400">Connections</span>
+                                <span className="font-bold text-[#E73F1E] dark:text-[#F9B637]">
                                     {userData.connection?.length || 0}
                                 </span>
                             </div>
-
-                            <button 
-                                onClick={() => setEdit(true)}
-                                className="w-full mt-3 py-1.5 px-3 rounded-md border border-slate-200 dark:border-[#2d1c15] text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#2d1c15] hover:text-[#E73F1E] dark:hover:text-[#F9B637] hover:border-[#FB6C00] transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                <HiPencilSquare className="w-3.5 h-3.5" />
-                                <span>Edit Profile</span>
-                            </button>
                         </div>
+
                     </div>
+
                 </aside>
 
-                <section className="lg:col-span-6 space-y-4">
+                <section className="md:col-span-8 lg:col-span-6 space-y-4">
                     
-                    <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-4 shadow-xs">
+                    <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-3.5 sm:p-4 shadow-xs transition-colors">
                         <div className="flex items-center gap-3">
                             <img 
                                 src={userData.profileImage || dp} 
                                 alt={userData.firstName} 
-                                className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
+                                className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
                             />
                             <button 
-                                onClick={() => setUploadPost(true)}
-                                className="flex-1 bg-slate-100 dark:bg-[#0f0b09] hover:bg-slate-200/80 dark:hover:bg-[#2d1c15] text-left text-xs sm:text-sm text-slate-500 dark:text-zinc-400 px-3.5 py-2.5 rounded-md border border-transparent dark:border-[#2d1c15] transition-colors"
+                                onClick={() => {
+                                    setUploadError("");
+                                    setUploadPost(true);
+                                }}
+                                className="flex-1 text-left px-4 py-2.5 rounded-full bg-slate-100 dark:bg-[#0f0b09] hover:bg-slate-200/70 dark:hover:bg-[#2d1c15] text-slate-500 dark:text-zinc-400 text-xs sm:text-sm font-medium border border-slate-200 dark:border-[#2d1c15] transition-colors"
                             >
-                                Start a post or share an update...
+                                Start a post, share your thoughts...
                             </button>
                         </div>
 
                         <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-[#2d1c15]">
                             <button 
                                 onClick={() => {
+                                    setUploadError("");
                                     setUploadPost(true);
-                                    setTimeout(() => fileInputRef.current?.click(), 100);
                                 }}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold text-slate-600 dark:text-zinc-300 hover:text-[#E73F1E] dark:hover:text-[#F9B637] hover:bg-slate-100 dark:hover:bg-[#2d1c15] transition-colors"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-600 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#2d1c15] hover:text-[#FB6C00] dark:hover:text-[#F9B637] transition-colors"
                             >
                                 <HiOutlinePhoto className="w-4 h-4 text-[#FB6C00] dark:text-[#F9B637]" />
-                                <span>Photo</span>
+                                <span>Media</span>
                             </button>
-                            
+
                             <button 
-                                onClick={() => setUploadPost(true)}
+                                onClick={() => {
+                                    setUploadError("");
+                                    setUploadPost(true);
+                                }}
                                 className="px-4 py-1.5 rounded-md text-xs font-bold bg-[#FB6C00] hover:bg-[#E73F1E] text-white shadow-xs transition-colors"
                             >
                                 Post
@@ -217,104 +229,80 @@ function Home() {
                         </div>
                     </div>
 
-                    {loadingPosts ? (
-                        <div className="space-y-4">
-                            {[1, 2].map((i) => (
-                                <div key={i} className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-5 shadow-xs animate-pulse space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#2d1c15]"></div>
-                                        <div className="space-y-2 flex-1">
-                                            <div className="h-3.5 bg-slate-200 dark:bg-[#2d1c15] rounded w-1/3"></div>
-                                            <div className="h-2.5 bg-slate-200 dark:bg-[#2d1c15] rounded w-1/4"></div>
+                    <div className="space-y-4">
+                        {loadingPosts ? (
+                            <div className="space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-4 space-y-3 animate-pulse">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#2d1c15]"></div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="h-3 bg-slate-200 dark:bg-[#2d1c15] rounded w-1/3"></div>
+                                                <div className="h-2 bg-slate-200 dark:bg-[#2d1c15] rounded w-1/4"></div>
+                                            </div>
                                         </div>
+                                        <div className="h-16 bg-slate-200 dark:bg-[#2d1c15] rounded"></div>
                                     </div>
-                                    <div className="space-y-2 pt-2">
-                                        <div className="h-3 bg-slate-200 dark:bg-[#2d1c15] rounded w-full"></div>
-                                        <div className="h-3 bg-slate-200 dark:bg-[#2d1c15] rounded w-5/6"></div>
-                                    </div>
-                                    <div className="h-44 bg-slate-200 dark:bg-[#2d1c15] rounded-md mt-2"></div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : postData.length > 0 ? (
-                        <div className="space-y-4">
-                            {postData.map((post) => (
-                                <Post 
-                                    key={post._id}
-                                    id={post._id}
-                                    author={post.author}
-                                    description={post.description}
-                                    image={post.image}
-                                    like={post.like}
-                                    comment={post.comment}
-                                    createdAt={post.createdAt}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-8 text-center space-y-2">
-                            <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-100">No posts on your feed yet</h3>
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-                                Be the first one to start a conversation or share an update!
-                            </p>
-                            <button 
-                                onClick={() => setUploadPost(true)}
-                                className="mt-2 px-4 py-1.5 rounded-md text-xs font-bold bg-[#FB6C00] hover:bg-[#E73F1E] text-white shadow-xs transition-colors"
-                            >
-                                Create First Post
-                            </button>
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        ) : postData.length > 0 ? (
+                            postData.map((post) => (
+                                <Post key={post._id} post={post} />
+                            ))
+                        ) : (
+                            <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-8 text-center space-y-2">
+                                <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">No posts in your feed yet</p>
+                                <p className="text-xs text-slate-400 dark:text-zinc-500">Connect with people or share your first post above!</p>
+                            </div>
+                        )}
+                    </div>
+
                 </section>
 
-                <aside className="lg:col-span-3 hidden lg:block space-y-4">
-                    <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-4 shadow-xs">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+                <aside className="hidden lg:block lg:col-span-3 space-y-4">
+                    
+                    <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] p-4 shadow-xs transition-colors">
+                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-[#2d1c15]">
+                            <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-1.5">
                                 <HiOutlineUserGroup className="w-4 h-4 text-[#FB6C00] dark:text-[#F9B637]" />
-                                <span>Suggested For You</span>
+                                <span>Suggested People</span>
                             </h3>
                         </div>
 
-                        {suggestedUsers.length > 0 ? (
-                            <div className="space-y-3">
-                                {suggestedUsers.slice(0, 5).map((user) => (
-                                    <div 
-                                        key={user._id}
-                                        className="flex items-center justify-between gap-2.5 p-1 rounded-md hover:bg-slate-50 dark:hover:bg-[#2d1c15]/50 transition-colors"
-                                    >
+                        <div className="space-y-3">
+                            {suggestedUsers.length > 0 ? (
+                                suggestedUsers.slice(0, 5).map((user) => (
+                                    <div key={user._id} className="flex items-center justify-between gap-2">
                                         <div 
                                             onClick={() => handleGetProfile(user.userName)}
-                                            className="flex items-center gap-2 min-w-0 cursor-pointer flex-1"
+                                            className="flex items-center gap-2.5 min-w-0 cursor-pointer group"
                                         >
                                             <img 
                                                 src={user.profileImage || dp} 
                                                 alt={user.firstName} 
-                                                className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
+                                                className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
                                             />
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate hover:text-[#FB6C00] dark:hover:text-[#F9B637] transition-colors">
+                                                <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate group-hover:text-[#FB6C00] dark:group-hover:text-[#F9B637] transition-colors">
                                                     {user.firstName} {user.lastName}
-                                                </p>
+                                                </h4>
                                                 <p className="text-[11px] text-slate-400 dark:text-zinc-500 truncate">
                                                     {user.headline || `@${user.userName}`}
                                                 </p>
                                             </div>
                                         </div>
+
                                         <ConnectButton userId={user._id} />
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-xs text-slate-400 dark:text-zinc-500 py-2 text-center">
-                                No suggested connections right now.
-                            </p>
-                        )}
+                                ))
+                            ) : (
+                                <p className="text-xs text-slate-400 dark:text-zinc-500 text-center py-2">
+                                    No suggestions at this moment.
+                                </p>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="p-2 text-[11px] text-slate-400 dark:text-zinc-500 text-center space-y-1">
-                        <p>© 2026 Conexis Network</p>
-                    </div>
                 </aside>
 
             </main>
@@ -338,6 +326,13 @@ function Home() {
                             </button>
                         </div>
 
+                        {uploadError && (
+                            <div className="bg-rose-500/10 border-b border-rose-500/20 px-4 py-2 flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400">
+                                <HiOutlineExclamationCircle className="w-4 h-4 shrink-0" />
+                                <span>{uploadError}</span>
+                            </div>
+                        )}
+
                         <div className="px-4 pt-3 flex items-center gap-2.5">
                             <img 
                                 src={userData.profileImage || dp} 
@@ -357,7 +352,10 @@ function Home() {
                         <div className="p-4 flex-1 overflow-y-auto space-y-3">
                             <textarea 
                                 value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                onChange={(e) => {
+                                    setDescription(e.target.value);
+                                    setUploadError("");
+                                }}
                                 placeholder="What would you like to share?"
                                 rows={4}
                                 className="w-full text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-xs sm:text-sm leading-relaxed border-0 focus:outline-none resize-none bg-transparent"

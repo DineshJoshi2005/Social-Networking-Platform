@@ -6,26 +6,32 @@ import Post from "../models/post.model.js";
 export const createPost = async (req, res) => {
     try {
         let { description } = req.body;
-        let newPost;
+        let image = null;
+
         if (req.file) {
-            let image = await uploadoOnCloudinary(req.file.path);
-            newPost = await Post.create({ author: req.userId, description, image });
-        } else {
-            newPost = await Post.create({ author: req.userId, description });
+            image = await uploadoOnCloudinary(req.file.path);
         }
 
-        // Populate author details so frontend can render it immediately without reload
+        if (!description && !image) {
+            return res.status(400).json({ message: "Post content or image is required" });
+        }
+
+        const newPost = await Post.create({
+            author: req.userId,
+            description: description || "",
+            image: image || undefined
+        });
+
         let populatedPost = await Post.findById(newPost._id)
             .populate("author", "firstName lastName headline profileImage userName")
             .populate("comment.user", "firstName lastName profileImage");
 
-        // Broadcast to all connected clients
         io.emit("newPostCreated", populatedPost);
 
         return res.status(201).json(populatedPost);
     } catch (err) {
-        console.log(err);
-        return res.status(400).json({ message: "create post error" });
+        console.log("Create post error:", err);
+        return res.status(500).json({ message: "Error creating post" });
     }
 };
 

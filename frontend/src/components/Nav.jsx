@@ -86,44 +86,44 @@ function Nav() {
     const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
 
     return (
-        <header className="fixed top-0 left-0 w-full h-15 bg-white/95 dark:bg-[#110d0a]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#2d1c15] z-50 transition-colors">
-            <div className="max-w-6xl mx-auto h-full px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-4">
+        <header className="fixed top-0 left-0 w-full h-14 bg-white/95 dark:bg-[#110d0a]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#2d1c15] z-50 transition-colors">
+            <div className="max-w-6xl mx-auto h-full px-2.5 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-4">
                 
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-sm sm:max-w-md" ref={searchRef}>
+                <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0 max-w-xs sm:max-w-md" ref={searchRef}>
                     <div 
                         onClick={() => navigate("/")}
-                        className="flex items-center gap-2 cursor-pointer group select-none shrink-0"
+                        className="flex items-center gap-1.5 cursor-pointer group select-none shrink-0"
                     >
-                        <div className="w-8 h-8 rounded-md bg-gradient-to-tr from-[#E73F1E] to-[#FB6C00] hover:opacity-95 flex items-center justify-center text-white shadow-xs transition-all">
+                        <div className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-md bg-gradient-to-tr from-[#E73F1E] to-[#FB6C00] hover:opacity-95 flex items-center justify-center text-white shadow-xs transition-all">
                             <HiLink className="w-4 h-4" />
                         </div>
-                        <span className="text-lg font-bold bg-gradient-to-r from-[#E73F1E] to-[#FB6C00] bg-clip-text text-transparent tracking-tight hidden md:inline-block">
+                        <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-[#E73F1E] to-[#FB6C00] bg-clip-text text-transparent tracking-tight hidden lg:inline-block">
                             Conexis
                         </span>
                     </div>
 
-                    <div className="relative flex-1 min-w-[130px]">
+                    <div className="relative flex-1 min-w-0">
                         <div className="relative flex items-center">
-                            <IoSearchOutline className="absolute left-2.5 sm:left-3 w-4 h-4 text-slate-400 dark:text-zinc-500 pointer-events-none" />
+                            <IoSearchOutline className="absolute left-2 sm:left-3 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-zinc-500 pointer-events-none" />
                             <input 
                                 type="text"
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 placeholder="Search..."
-                                className="w-full bg-slate-100 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-xs sm:text-sm pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 rounded-md border border-slate-200 dark:border-[#2d1c15] focus:border-[#FB6C00] focus:bg-white dark:focus:bg-[#17120e] focus:outline-none focus:ring-2 focus:ring-[#FB6C00]/15 transition-all"
+                                className="w-full bg-slate-100 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-xs sm:text-sm pl-7 sm:pl-9 pr-6 sm:pr-8 py-1.5 rounded-md border border-slate-200 dark:border-[#2d1c15] focus:border-[#FB6C00] focus:bg-white dark:focus:bg-[#17120e] focus:outline-none focus:ring-1 focus:ring-[#FB6C00]/20 transition-all truncate"
                             />
                             {searchInput && (
                                 <button 
                                     onClick={() => { setSearchInput(""); setSearchData([]); }}
-                                    className="absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 p-0.5"
+                                    className="absolute right-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 p-0.5"
                                 >
-                                    <IoCloseOutline className="w-4 h-4" />
+                                    <IoCloseOutline className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 </button>
                             )}
                         </div>
 
                         {searchInput && (
-                            <div className="fixed top-16 left-3 right-3 sm:absolute sm:top-10 sm:left-0 sm:right-auto sm:w-96 bg-white dark:bg-[#17120e] rounded-xl shadow-2xl border border-slate-200 dark:border-[#2d1c15] p-3 z-50 max-h-[75vh] sm:max-h-80 overflow-y-auto">
+                            <div className="fixed top-15 left-2.5 right-2.5 sm:absolute sm:top-10 sm:left-0 sm:right-auto sm:w-96 bg-white dark:bg-[#17120e] rounded-xl shadow-2xl border border-slate-200 dark:border-[#2d1c15] p-3 z-50 max-h-[75vh] sm:max-h-80 overflow-y-auto">
                                 <div className="flex items-center justify-between px-2 pb-2 mb-1 border-b border-slate-100 dark:border-[#2d1c15]">
                                     <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">
                                         {isSearching ? "Searching..." : `Results (${searchData.length})`}
@@ -174,23 +174,23 @@ function Nav() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                <div className="flex items-center gap-0.5 sm:gap-1.5 shrink-0">
                     <button 
                         onClick={() => navigate("/")}
-                        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 ${
                             location.pathname === "/" 
                                 ? "bg-[#FB6C00]/10 text-[#E73F1E] dark:text-[#F9B637] font-bold" 
                                 : "text-slate-600 dark:text-zinc-300 hover:text-[#E73F1E] dark:hover:text-[#F9B637] hover:bg-slate-100 dark:hover:bg-[#2d1c15]/60"
                         }`}
                         title="Feed"
                     >
-                        <HiOutlineHome className="w-4 h-4" />
+                        <HiOutlineHome className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                         <span className="hidden md:inline">Feed</span>
                     </button>
 
                     <button 
                         onClick={() => navigate("/network")}
-                        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 ${
                             location.pathname === "/network" 
                                 ? "bg-[#FB6C00]/10 text-[#E73F1E] dark:text-[#F9B637] font-bold" 
                                 : "text-slate-600 dark:text-zinc-300 hover:text-[#E73F1E] dark:hover:text-[#F9B637] hover:bg-slate-100 dark:hover:bg-[#2d1c15]/60"
@@ -198,9 +198,9 @@ function Nav() {
                         title="Network"
                     >
                         <div className="relative flex items-center justify-center">
-                            <HiOutlineUserGroup className="w-4 h-4" />
+                            <HiOutlineUserGroup className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                             {pendingConnections > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-[#FB6C00] text-white text-[9px] font-bold px-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full shadow-xs">
+                                <span className="absolute -top-1.5 -right-1.5 bg-[#FB6C00] text-white text-[9px] font-bold px-1 min-w-[15px] h-[15px] flex items-center justify-center rounded-full shadow-xs">
                                     {pendingConnections > 99 ? '99+' : pendingConnections}
                                 </span>
                             )}
@@ -210,7 +210,7 @@ function Nav() {
 
                     <button 
                         onClick={() => navigate("/chat")}
-                        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 ${
                             isActive("/chat") 
                                 ? "bg-[#FB6C00]/10 text-[#E73F1E] dark:text-[#F9B637] font-bold" 
                                 : "text-slate-600 dark:text-zinc-300 hover:text-[#E73F1E] dark:hover:text-[#F9B637] hover:bg-slate-100 dark:hover:bg-[#2d1c15]/60"
@@ -218,9 +218,9 @@ function Nav() {
                         title="Messaging"
                     >
                         <div className="relative flex items-center justify-center">
-                            <HiOutlineChatBubbleLeftRight className="w-4 h-4" />
+                            <HiOutlineChatBubbleLeftRight className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                             {unreadMessages > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-[#FB6C00] text-white text-[9px] font-bold px-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full shadow-xs">
+                                <span className="absolute -top-1.5 -right-1.5 bg-[#FB6C00] text-white text-[9px] font-bold px-1 min-w-[15px] h-[15px] flex items-center justify-center rounded-full shadow-xs">
                                     {unreadMessages > 99 ? '99+' : unreadMessages}
                                 </span>
                             )}
@@ -230,7 +230,7 @@ function Nav() {
 
                     <button 
                         onClick={() => navigate("/notification")}
-                        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors shrink-0 ${
                             location.pathname === "/notification" 
                                 ? "bg-[#FB6C00]/10 text-[#E73F1E] dark:text-[#F9B637] font-bold" 
                                 : "text-slate-600 dark:text-zinc-300 hover:text-[#E73F1E] dark:hover:text-[#F9B637] hover:bg-slate-100 dark:hover:bg-[#2d1c15]/60"
@@ -238,9 +238,9 @@ function Nav() {
                         title="Alerts"
                     >
                         <div className="relative flex items-center justify-center">
-                            <IoNotificationsOutline className="w-4 h-4" />
+                            <IoNotificationsOutline className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                             {unreadNotifications > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-[#E73F1E] text-white text-[9px] font-bold px-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full shadow-xs animate-pulse">
+                                <span className="absolute -top-1.5 -right-1.5 bg-[#E73F1E] text-white text-[9px] font-bold px-1 min-w-[15px] h-[15px] flex items-center justify-center rounded-full shadow-xs animate-pulse">
                                     {unreadNotifications > 99 ? '99+' : unreadNotifications}
                                 </span>
                             )}
@@ -250,14 +250,14 @@ function Nav() {
 
                     <button 
                         onClick={toggleTheme}
-                        className="p-1.5 rounded-md text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#2d1c15] hover:text-[#FB6C00] dark:hover:text-[#F9B637] transition-colors"
+                        className="p-1.5 rounded-md text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#2d1c15] hover:text-[#FB6C00] dark:hover:text-[#F9B637] transition-colors shrink-0"
                         title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                     >
                         {darkMode ? <HiOutlineSun className="w-4 h-4 text-[#F9B637]" /> : <HiOutlineMoon className="w-4 h-4" />}
                     </button>
 
                     {userData && (
-                        <div className="relative" ref={menuRef}>
+                        <div className="relative shrink-0" ref={menuRef}>
                             <button 
                                 onClick={() => setShowUserMenu(prev => !prev)}
                                 className="flex items-center gap-1 p-0.5 sm:p-1 rounded-md hover:bg-slate-100 dark:hover:bg-[#2d1c15] transition-colors focus:outline-none"
@@ -265,7 +265,7 @@ function Nav() {
                                 <img 
                                     src={userData.profileImage || dp} 
                                     alt={userData.firstName} 
-                                    className="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15]"
+                                    className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15]"
                                 />
                                 <FiChevronDown className={`w-3 h-3 text-slate-500 dark:text-zinc-400 hidden sm:block transition-transform ${showUserMenu ? "rotate-180" : ""}`} />
                             </button>

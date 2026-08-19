@@ -2,7 +2,6 @@ import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import { io, userSocketMap } from "../index.js";
 
-// Send a new message to a connected user
 export const sendMessage = async (req, res) => {
     try {
         const senderId = req.userId;
@@ -17,28 +16,25 @@ export const sendMessage = async (req, res) => {
             return res.status(400).json({ message: "You cannot message yourself" });
         }
 
-        // Create and save message
+        const senderUser = await User.findById(senderId);
+        if (!senderUser || !senderUser.connection.some(id => id.toString() === receiverId.toString())) {
+            return res.status(403).json({ message: "You must be connected with this user to send messages" });
+        }
+
         const createdMessage = await Message.create({
             sender: senderId,
             receiver: receiverId,
             message: message.trim()
         });
 
-        // Fast populate directly on created document
         const populatedMessage = await createdMessage.populate([
             { path: "sender", select: "firstName lastName userName profileImage headline" },
             { path: "receiver", select: "firstName lastName userName profileImage headline" }
         ]);
 
-        // Real-time socket emission to both recipient and sender
         const receiverSocketId = userSocketMap.get(receiverId.toString());
-        const senderSocketId = userSocketMap.get(senderId.toString());
-
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", populatedMessage);
-        }
-        if (senderSocketId && senderSocketId !== receiverSocketId) {
-            io.to(senderSocketId).emit("newMessage", populatedMessage);
         }
 
         return res.status(201).json(populatedMessage);
@@ -47,7 +43,6 @@ export const sendMessage = async (req, res) => {
     }
 };
 
-// Get chat history between current user and target user
 export const getMessages = async (req, res) => {
     try {
         const myId = req.userId;
@@ -70,7 +65,6 @@ export const getMessages = async (req, res) => {
     }
 };
 
-// Get unread message count
 export const getUnreadMessageCount = async (req, res) => {
     try {
         const myId = req.userId;
@@ -84,7 +78,6 @@ export const getUnreadMessageCount = async (req, res) => {
     }
 };
 
-// Mark messages from a specific sender as seen
 export const markMessagesAsSeen = async (req, res) => {
     try {
         const myId = req.userId;
@@ -101,13 +94,11 @@ export const markMessagesAsSeen = async (req, res) => {
     }
 };
 
-// Get latest messages for all active chats
 export const getRecentConversations = async (req, res) => {
     try {
         const myId = req.userId;
         const currentUser = await User.findById(myId).populate("connection", "firstName lastName userName profileImage headline").lean();
 
-        // Fetch last message for each connection
         const conversations = await Promise.all(
             (currentUser.connection || []).map(async (connUser) => {
                 const lastMsg = await Message.findOne({
@@ -133,7 +124,6 @@ export const getRecentConversations = async (req, res) => {
             })
         );
 
-        // Sort by most recent message
         conversations.sort((a, b) => {
             if (!a.lastMessageTime) return 1;
             if (!b.lastMessageTime) return -1;

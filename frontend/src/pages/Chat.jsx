@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Nav from '../components/Nav.jsx';
 import { authDataContext } from '../context/AuthContext.jsx';
 import { userDataContext } from '../context/UserContext.jsx';
+import ConnectButton from '../components/ConnectButton.jsx';
 import axios from 'axios';
 import dp from "../assets/dp.webp";
 import { socket } from '../../socket.js';
@@ -11,7 +12,8 @@ import {
     HiOutlineChatBubbleLeftRight,
     HiOutlineMagnifyingGlass,
     HiOutlineArrowLeft,
-    HiOutlineUser
+    HiOutlineUser,
+    HiOutlineExclamationCircle
 } from "react-icons/hi2";
 import moment from 'moment';
 
@@ -33,6 +35,7 @@ function Chat() {
     const [loadingConnections, setLoadingConnections] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
+    const [sendError, setSendError] = useState("");
 
     const messagesEndRef = useRef(null);
 
@@ -43,6 +46,11 @@ function Chat() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    const isUserConnected = (userId) => {
+        if (!userId) return false;
+        return connections.some(c => c._id === userId);
+    };
 
     const fetchConnections = async () => {
         setLoadingConnections(true);
@@ -78,6 +86,7 @@ function Chat() {
     const fetchMessages = async (targetUserId) => {
         if (!targetUserId) return;
         setLoadingMessages(true);
+        setSendError("");
         try {
             const result = await axios.get(`${serverUrl}/api/message/${targetUserId}`, { withCredentials: true });
             setMessages(result.data || []);
@@ -97,6 +106,7 @@ function Chat() {
 
         const messageText = inputMessage.trim();
         const tempId = `temp-${Date.now()}`;
+        setSendError("");
 
         const optimisticMessage = {
             _id: tempId,
@@ -117,11 +127,18 @@ function Chat() {
             }, { withCredentials: true });
 
             if (result.data) {
-                setMessages(prev => prev.map(m => m._id === tempId ? result.data : m));
+                setMessages(prev => {
+                    if (prev.some(m => m._id === result.data._id)) {
+                        return prev.filter(m => m._id !== tempId);
+                    }
+                    return prev.map(m => m._id === tempId ? result.data : m);
+                });
             }
         } catch (error) {
             console.log("Send message error:", error);
             setMessages(prev => prev.filter(m => m._id !== tempId));
+            const errMsg = error.response?.data?.message || "Failed to send message";
+            setSendError(errMsg);
         } finally {
             setSending(false);
         }
@@ -156,6 +173,12 @@ function Chat() {
             ) {
                 setMessages(prev => {
                     if (prev.some(m => m._id === newMsg._id)) return prev;
+                    const optIndex = prev.findIndex(m => m.isOptimistic && m.message === newMsg.message);
+                    if (optIndex !== -1) {
+                        const updated = [...prev];
+                        updated[optIndex] = newMsg;
+                        return updated;
+                    }
                     return [...prev, newMsg];
                 });
 
@@ -170,12 +193,28 @@ function Chat() {
             }
         };
 
+        const handleConnectionRemoved = ({ userId }) => {
+            setConnections(prev => prev.filter(c => c._id !== userId));
+        };
+
+        const handleStatusUpdate = ({ updatedUserId, newStatus }) => {
+            if (newStatus === "connect" || newStatus === "pending") {
+                setConnections(prev => prev.filter(c => c._id !== updatedUserId));
+            } else if (newStatus === "disconnect") {
+                fetchConnections();
+            }
+        };
+
         socket.on("newMessage", handleNewMessage);
+        socket.on("connectionRemoved", handleConnectionRemoved);
+        socket.on("statusUpdate", handleStatusUpdate);
 
         return () => {
             socket.off("newMessage", handleNewMessage);
+            socket.off("connectionRemoved", handleConnectionRemoved);
+            socket.off("statusUpdate", handleStatusUpdate);
         };
-    }, [selectedUser, userData]);
+    }, [selectedUser, userData, serverUrl, fetchBadgeCounts]);
 
     const filteredConnections = connections.filter(con => {
         const fullName = `${con.firstName} ${con.lastName}`.toLowerCase();
@@ -183,17 +222,19 @@ function Chat() {
         return fullName.includes(searchTerm.toLowerCase()) || username.includes(searchTerm.toLowerCase());
     });
 
+    const connectedWithActiveUser = selectedUser ? isUserConnected(selectedUser._id) : false;
+
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-20 pb-8 px-4 sm:px-6 transition-colors flex flex-col">
+        <div className="min-h-screen bg-stone-50 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 pt-18 sm:pt-20 pb-8 px-2 sm:px-6 transition-colors flex flex-col">
             <Nav />
 
             <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
                 
-                <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] shadow-xs flex-1 flex overflow-hidden min-h-[580px] max-h-[78vh]">
+                <div className="bg-white dark:bg-[#17120e] rounded-lg border border-slate-200 dark:border-[#2d1c15] shadow-xs flex-1 flex overflow-hidden min-h-[580px] max-h-[82vh]">
                     
                     <aside className={`w-full md:w-80 border-r border-slate-200 dark:border-[#2d1c15] flex flex-col ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
                         
-                        <div className="p-3.5 border-b border-slate-200 dark:border-[#2d1c15] space-y-2.5">
+                        <div className="p-3 border-b border-slate-200 dark:border-[#2d1c15] space-y-2.5">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                                     <HiOutlineChatBubbleLeftRight className="w-4 h-4 text-[#FB6C00] dark:text-[#F9B637]" />
@@ -282,8 +323,8 @@ function Chat() {
                         
                         {selectedUser ? (
                             <>
-                                <div className="p-3.5 bg-white dark:bg-[#17120e] border-b border-slate-200 dark:border-[#2d1c15] flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-3 min-w-0">
+                                <div className="p-3 bg-white dark:bg-[#17120e] border-b border-slate-200 dark:border-[#2d1c15] flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5 min-w-0">
                                         <button 
                                             onClick={() => setSelectedUser(null)}
                                             className="md:hidden p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-[#2d1c15] text-slate-600 dark:text-zinc-300"
@@ -294,7 +335,7 @@ function Chat() {
                                         <img 
                                             src={selectedUser.profileImage || dp} 
                                             alt={selectedUser.firstName} 
-                                            className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
+                                            className="w-8.5 h-8.5 rounded-full object-cover border border-slate-200 dark:border-[#2d1c15] shrink-0"
                                         />
 
                                         <div className="min-w-0 flex-1">
@@ -304,22 +345,40 @@ function Chat() {
                                             >
                                                 {selectedUser.firstName} {selectedUser.lastName}
                                             </h3>
-                                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate">
+                                            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-zinc-400 truncate">
                                                 {selectedUser.headline || `@${selectedUser.userName}`}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <button 
-                                        onClick={() => handleGetProfile(selectedUser.userName)}
-                                        className="px-2.5 py-1 rounded-md border border-slate-200 dark:border-[#2d1c15] text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#2d1c15] hover:text-[#FB6C00] dark:hover:text-[#F9B637] transition-colors flex items-center gap-1 shrink-0"
-                                    >
-                                        <HiOutlineUser className="w-3.5 h-3.5" />
-                                        <span className="hidden sm:inline">Profile</span>
-                                    </button>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <ConnectButton userId={selectedUser._id} />
+                                        <button 
+                                            onClick={() => handleGetProfile(selectedUser.userName)}
+                                            className="p-1.5 sm:px-2.5 sm:py-1 rounded-md border border-slate-200 dark:border-[#2d1c15] text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-[#2d1c15] hover:text-[#FB6C00] dark:hover:text-[#F9B637] transition-colors flex items-center gap-1"
+                                            title="View Profile"
+                                        >
+                                            <HiOutlineUser className="w-3.5 h-3.5" />
+                                            <span className="hidden sm:inline">Profile</span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                                {!connectedWithActiveUser && (
+                                    <div className="bg-amber-500/10 border-b border-amber-500/20 px-3.5 py-2 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                                        <HiOutlineExclamationCircle className="w-4 h-4 shrink-0" />
+                                        <span>You are not connected with this user. Connect with them to send messages.</span>
+                                    </div>
+                                )}
+
+                                {sendError && (
+                                    <div className="bg-rose-500/10 border-b border-rose-500/20 px-3.5 py-2 flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400">
+                                        <HiOutlineExclamationCircle className="w-4 h-4 shrink-0" />
+                                        <span>{sendError}</span>
+                                    </div>
+                                )}
+
+                                <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3">
                                     {loadingMessages ? (
                                         <div className="space-y-3 animate-pulse">
                                             <div className="flex flex-col items-start space-y-1">
@@ -344,7 +403,7 @@ function Chat() {
                                                     className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}
                                                 >
                                                     <div 
-                                                        className={`max-w-[78%] sm:max-w-md px-3.5 py-2 rounded-lg text-xs sm:text-sm leading-relaxed shadow-2xs break-words ${
+                                                        className={`max-w-[82%] sm:max-w-md px-3.5 py-2 rounded-lg text-xs sm:text-sm leading-relaxed shadow-2xs break-words ${
                                                             isMine 
                                                                 ? 'bg-gradient-to-r from-[#E73F1E] to-[#FB6C00] text-white rounded-br-none' 
                                                                 : 'bg-white dark:bg-[#1f1712] text-slate-800 dark:text-zinc-100 border border-slate-200 dark:border-[#2d1c15] rounded-bl-none'
@@ -367,7 +426,9 @@ function Chat() {
                                                 No messages yet
                                             </h4>
                                             <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-xs">
-                                                Say hello to {selectedUser.firstName} to start the conversation!
+                                                {connectedWithActiveUser
+                                                    ? `Say hello to ${selectedUser.firstName} to start the conversation!`
+                                                    : `Connect with ${selectedUser.firstName} to start messaging.`}
                                             </p>
                                         </div>
                                     )}
@@ -376,19 +437,24 @@ function Chat() {
 
                                 <form 
                                     onSubmit={handleSendMessage}
-                                    className="p-3 bg-white dark:bg-[#17120e] border-t border-slate-200 dark:border-[#2d1c15] flex items-center gap-2"
+                                    className="p-2.5 sm:p-3 bg-white dark:bg-[#17120e] border-t border-slate-200 dark:border-[#2d1c15] flex items-center gap-2"
                                 >
                                     <input 
                                         type="text"
-                                        placeholder={`Message ${selectedUser.firstName}...`}
+                                        disabled={!connectedWithActiveUser}
+                                        placeholder={
+                                            connectedWithActiveUser 
+                                                ? `Message ${selectedUser.firstName}...` 
+                                                : `You must be connected to message ${selectedUser.firstName}`
+                                        }
                                         value={inputMessage}
                                         onChange={(e) => setInputMessage(e.target.value)}
-                                        className="flex-1 px-3.5 py-2 rounded-md bg-slate-100 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-xs sm:text-sm border border-slate-200 dark:border-[#2d1c15] focus:border-[#FB6C00] focus:outline-none focus:ring-2 focus:ring-[#FB6C00]/15"
+                                        className="flex-1 px-3.5 py-2 rounded-md bg-slate-100 dark:bg-[#0f0b09] text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 text-xs sm:text-sm border border-slate-200 dark:border-[#2d1c15] focus:border-[#FB6C00] focus:outline-none focus:ring-2 focus:ring-[#FB6C00]/15 disabled:opacity-60 disabled:cursor-not-allowed"
                                     />
 
                                     <button 
                                         type="submit"
-                                        disabled={!inputMessage.trim() || sending}
+                                        disabled={!inputMessage.trim() || sending || !connectedWithActiveUser}
                                         className="p-2.5 rounded-md bg-[#FB6C00] hover:bg-[#E73F1E] text-white shadow-xs disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         title="Send message"
                                     >

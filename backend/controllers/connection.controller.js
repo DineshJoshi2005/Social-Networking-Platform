@@ -107,6 +107,11 @@ export const rejectConnection = async (req, res) => {
         connection.status = "rejected";
         await connection.save();
 
+        let senderSocketId = userSocketMap.get(connection.sender.toString());
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("statusUpdate", { updatedUserId: req.userId, newStatus: "connect" });
+        }
+
         return res.status(200).json({ message: "Connection rejected" });
 
     } catch (error) {
@@ -147,6 +152,7 @@ export const removeConnection = async (req, res) => {
     try {
         let myId = req.userId;
         let otherUserId = req.params.userId;
+
         await User.findByIdAndUpdate(myId, {
             $pull: { connection: otherUserId }
         });
@@ -154,14 +160,23 @@ export const removeConnection = async (req, res) => {
             $pull: { connection: myId }
         });
 
-        let receiverSocketId = userSocketMap.get(otherUserId);
-        let senderSocketId = userSocketMap.get(myId);
+        await Connection.deleteMany({
+            $or: [
+                { sender: myId, receiver: otherUserId },
+                { sender: otherUserId, receiver: myId }
+            ]
+        });
+
+        let receiverSocketId = userSocketMap.get(otherUserId.toString());
+        let senderSocketId = userSocketMap.get(myId.toString());
 
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("statusUpdate", { updatedUserId: myId, newStatus: "connect" });
+            io.to(receiverSocketId).emit("connectionRemoved", { userId: myId });
         }
         if (senderSocketId) {
             io.to(senderSocketId).emit("statusUpdate", { updatedUserId: otherUserId, newStatus: "connect" });
+            io.to(senderSocketId).emit("connectionRemoved", { userId: otherUserId });
         }
 
         return res.status(200).json({ message: "Connection removed" });
@@ -186,7 +201,7 @@ export const getUserConnections = async (req, res) => {
         const userId = req.userId;
         const user = await User.findById(userId)
             .populate("connection", "firstName lastName email userName profileImage headline connection");
-        return res.status(200).json(user.connection);
+        return res.status(200).json(user?.connection || []);
     } catch (error) {
         return res.status(500).json({ message: `Get User Connections Error : ${error.message}` });
     }
