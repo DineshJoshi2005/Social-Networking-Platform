@@ -2,6 +2,9 @@
 
 **Conexis** is a full-stack, real-time professional networking platform built with the MERN stack (MongoDB, Express, React, Node.js), Socket.io, and Tailwind CSS. It enables professionals to connect, share updates, direct message in real time, manage network invitations, and customize their career profiles.
 
+🌐 **Live Demo (Vercel)**: [https://social-networking-platform-two.vercel.app](https://social-networking-platform-two.vercel.app)  
+⚙️ **Backend API (Render)**: [https://social-networking-platform-7wnj.onrender.com](https://social-networking-platform-7wnj.onrender.com)
+
 ---
 
 ## 🌟 Key Features
